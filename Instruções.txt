@@ -1,0 +1,109 @@
+Criar banco de dados no MySQL
+
+Atualizar e verificar se o mySQL está em execução
+
+sudo service mysql restart
+
+Criar aplicativo
+
+grails create-app <nome-projeto>
+
+Modifique o disponível descomentando o arquivo em grails-app/conf/BuildConfig.groovy
+
+//runtime 'mysql:mysql-connector-java:5.1.16'
+
+Modificar o arquivo grails-app/conf/DataSource.groovy Conforme o código abaixo. Lembrando que no meu caso o username e password são root e meu banco de bados com o nome sec_treasurer
+
+					dataSource {
+					    pooled = true
+					    driverClassName = "com.mysql.jdbc.Driver"
+					    dialect = "org.hibernate.dialect.MySQL5InnoDBDialect"
+					}
+					hibernate {
+					    cache.use_second_level_cache = true
+					    cache.use_query_cache = true
+					    cache.region.factory_class = 'net.sf.ehcache.hibernate.EhCacheRegionFactory'
+					}
+					// environment specific settings
+					environments {
+					    development {
+					        dataSource {
+					            dbCreate = "create-drop" // one of 'create', 'create-drop', 'update', 'validate', ''
+					            url = "jdbc:mysql://localhost/sec_treasurer?useUnicode=yes&characterEncoding=UTF-8"
+					            username = "root"
+					            password = "root"
+					        }
+					    }
+					    test {
+					        dataSource {
+					            dbCreate = "update"
+					            url = "jdbc:mysql://localhost/sec_treasurer?useUnicode=yes&characterEncoding=UTF-8"
+					            username = "root"
+					            password = "root"
+					        }
+					    }
+					    production {
+					        dataSource {
+					            dbCreate = "update"
+					            url = "jdbc:mysql://localhost/sec_treasurer?useUnicode=yes&characterEncoding=UTF-8"
+					            username = "root"
+					            password = "root"
+					        }
+					    }
+					}
+
+
+
+Importante que o tomcat não esteja em execução
+
+grails install-plugin spring-security-core
+
+
+grails s2-quickstart <nome do pacote> User Role
+
+Instalar interface para controlar logins de acesso
+
+grails install-plugin spring-security-ui
+
+Dependencies 
+
+grails refresh-dependencies
+grails install-plugin mail
+grails install-plugin jquery
+grails install-plugin jquery-ui
+grails install-plugin famfamfam
+
+Vá até user_controller
+Criar um role (ROLE_ADMIN) e dps um usuário
+E a aplicação pode ser utilizada pelo usuário
+
+Vá até conf/Config.groovy adicione o bloco de código no final do código
+Antes adicione a importação
+import grails.plugins.springsecurity.SecurityConfigType
+
+// Added by the Spring Security Core plugin:
+grails.plugins.springsecurity.userLookup.userDomainClassName = 'semeru_grails_project.User'
+grails.plugins.springsecurity.userLookup.authorityJoinClassName = 'semeru_grails_project.UserRole'
+grails.plugins.springsecurity.authority.className = 'semeru_grails_project.Role'
+
+
+grails.plugins.springsecurity.securityConfigType = SecurityConfigType.InterceptUrlMap
+grails.plugins.springsecurity.interceptUrlMap = [
+'/logout/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+'/login/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+'/j_spring_security_check/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+'/js/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+'/css/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+'/images/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+'/**':['ROLE_ADMIN', 'IS_AUTHENTICATED_FULLY'],
+]
+
+
+Vá até conf/UrlMappings.groovy adicione o bloco de código no final do código
+
+	"/login/$action?"(controller:"login")
+"/logout/$action?"(controller:"logout")
+
+
+Caso o login não funcione verifique no banco de dados se a tabela associativa user_role contém os Ids dos usuário e papel criado.
+
